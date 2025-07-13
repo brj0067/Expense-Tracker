@@ -47,6 +47,16 @@ export const billSplits = pgTable("bill_splits", {
   date: timestamp("date").defaultNow().notNull(),
 });
 
+export const accounts = pgTable("accounts", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  name: text("name").notNull(),
+  type: text("type").notNull(), // "bank", "cash", "credit", "savings"
+  balance: real("balance").notNull().default(0),
+  color: text("color").notNull(),
+  icon: text("icon").notNull(),
+});
+
 export const activities = pgTable("activities", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull(),
@@ -98,6 +108,15 @@ export const insertBillSplitSchema = createInsertSchema(billSplits).pick({
   customAmounts: true,
 });
 
+export const insertAccountSchema = createInsertSchema(accounts).pick({
+  userId: true,
+  name: true,
+  type: true,
+  balance: true,
+  color: true,
+  icon: true,
+});
+
 export const insertActivitySchema = createInsertSchema(activities).pick({
   userId: true,
   type: true,
@@ -120,5 +139,7 @@ export type Roommate = typeof roommates.$inferSelect;
 export type InsertRoommate = z.infer<typeof insertRoommateSchema>;
 export type BillSplit = typeof billSplits.$inferSelect;
 export type InsertBillSplit = z.infer<typeof insertBillSplitSchema>;
+export type Account = typeof accounts.$inferSelect;
+export type InsertAccount = z.infer<typeof insertAccountSchema>;
 export type Activity = typeof activities.$inferSelect;
 export type InsertActivity = z.infer<typeof insertActivitySchema>;

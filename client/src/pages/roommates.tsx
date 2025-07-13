@@ -173,9 +173,8 @@ export default function Roommates() {
               <CardTitle className="text-lg">Your Roommates</CardTitle>
               <Dialog open={isRoommateDialogOpen} onOpenChange={setIsRoommateDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button size="sm">
-                    <PlusIcon className="h-4 w-4 mr-2" />
-                    Add
+                  <Button size="sm" className="w-10 h-10 rounded-full p-0">
+                    <PlusIcon className="h-4 w-4" />
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
@@ -266,9 +265,8 @@ export default function Roommates() {
               <CardTitle className="text-lg">Split Bills</CardTitle>
               <Dialog open={isBillSplitDialogOpen} onOpenChange={setIsBillSplitDialogOpen}>
                 <DialogTrigger asChild>
-                  <Button size="sm" disabled={!roommates || roommates.length === 0}>
-                    <PlusIcon className="h-4 w-4 mr-2" />
-                    New Split
+                  <Button size="sm" disabled={!roommates || roommates.length === 0} className="w-10 h-10 rounded-full p-0">
+                    <PlusIcon className="h-4 w-4" />
                   </Button>
                 </DialogTrigger>
                 <DialogContent>

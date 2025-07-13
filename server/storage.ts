@@ -1,8 +1,9 @@
 import { 
-  users, allergies, expenses, roommates, billSplits, activities,
+  users, allergies, expenses, roommates, billSplits, activities, accounts,
   type User, type InsertUser, type Allergy, type InsertAllergy,
   type Expense, type InsertExpense, type Roommate, type InsertRoommate,
-  type BillSplit, type InsertBillSplit, type Activity, type InsertActivity
+  type BillSplit, type InsertBillSplit, type Activity, type InsertActivity,
+  type Account, type InsertAccount
 } from "@shared/schema";
 
 export interface IStorage {
@@ -36,6 +37,13 @@ export interface IStorage {
   updateBillSplit(id: number, billSplit: Partial<BillSplit>): Promise<BillSplit | undefined>;
   settleBillSplit(id: number): Promise<boolean>;
 
+  // Accounts
+  getAccountsByUserId(userId: number): Promise<Account[]>;
+  createAccount(account: InsertAccount): Promise<Account>;
+  updateAccount(id: number, account: Partial<Account>): Promise<Account | undefined>;
+  deleteAccount(id: number): Promise<boolean>;
+  getTotalBalance(userId: number): Promise<number>;
+
   // Activities
   getRecentActivitiesByUserId(userId: number, limit?: number): Promise<Activity[]>;
   createActivity(activity: InsertActivity): Promise<Activity>;
@@ -48,6 +56,7 @@ export class MemStorage implements IStorage {
   private roommates: Map<number, Roommate>;
   private billSplits: Map<number, BillSplit>;
   private activities: Map<number, Activity>;
+  private accounts: Map<number, Account>;
   private currentId: number;
 
   constructor() {
@@ -57,6 +66,7 @@ export class MemStorage implements IStorage {
     this.roommates = new Map();
     this.billSplits = new Map();
     this.activities = new Map();
+    this.accounts = new Map();
     this.currentId = 1;
 
     // Initialize with demo user and data
@@ -86,7 +96,15 @@ export class MemStorage implements IStorage {
     ];
     demoRoommates.forEach(roommate => this.roommates.set(roommate.id, roommate));
 
-    this.currentId = 4;
+    // Demo accounts
+    const demoAccounts: Account[] = [
+      { id: 3, userId: 1, name: "Main Checking", type: "bank", balance: 2450.75, color: "primary", icon: "CreditCard" },
+      { id: 4, userId: 1, name: "Cash Wallet", type: "cash", balance: 127.50, color: "secondary", icon: "Wallet" },
+      { id: 5, userId: 1, name: "Savings", type: "savings", balance: 8900.00, color: "accent", icon: "PiggyBank" },
+    ];
+    demoAccounts.forEach(account => this.accounts.set(account.id, account));
+
+    this.currentId = 6;
   }
 
   async getUser(id: number): Promise<User | undefined> {
@@ -139,6 +157,8 @@ export class MemStorage implements IStorage {
       ...insertExpense, 
       id,
       date: new Date(),
+      allergyTags: insertExpense.allergyTags || null,
+      isAllergySafe: insertExpense.isAllergySafe ?? true,
     };
     this.expenses.set(id, expense);
 
@@ -187,7 +207,12 @@ export class MemStorage implements IStorage {
 
   async createRoommate(insertRoommate: InsertRoommate): Promise<Roommate> {
     const id = this.currentId++;
-    const roommate: Roommate = { ...insertRoommate, id };
+    const roommate: Roommate = { 
+      ...insertRoommate, 
+      id,
+      email: insertRoommate.email || null,
+      avatar: insertRoommate.avatar || null,
+    };
     this.roommates.set(id, roommate);
     return roommate;
   }
@@ -220,6 +245,7 @@ export class MemStorage implements IStorage {
       id,
       date: new Date(),
       isSettled: false,
+      customAmounts: insertBillSplit.customAmounts || null,
     };
     this.billSplits.set(id, billSplit);
 
@@ -271,9 +297,45 @@ export class MemStorage implements IStorage {
       ...insertActivity, 
       id,
       date: new Date(),
+      description: insertActivity.description || null,
+      amount: insertActivity.amount || null,
+      tags: insertActivity.tags || null,
     };
     this.activities.set(id, activity);
     return activity;
+  }
+
+  async getAccountsByUserId(userId: number): Promise<Account[]> {
+    return Array.from(this.accounts.values()).filter(account => account.userId === userId);
+  }
+
+  async createAccount(insertAccount: InsertAccount): Promise<Account> {
+    const id = this.currentId++;
+    const account: Account = { 
+      ...insertAccount, 
+      id,
+      balance: insertAccount.balance ?? 0,
+    };
+    this.accounts.set(id, account);
+    return account;
+  }
+
+  async updateAccount(id: number, account: Partial<Account>): Promise<Account | undefined> {
+    const existing = this.accounts.get(id);
+    if (!existing) return undefined;
+    const updated = { ...existing, ...account };
+    this.accounts.set(id, updated);
+    return updated;
+  }
+
+  async deleteAccount(id: number): Promise<boolean> {
+    return this.accounts.delete(id);
+  }
+
+  async getTotalBalance(userId: number): Promise<number> {
+    return Array.from(this.accounts.values())
+      .filter(account => account.userId === userId)
+      .reduce((total, account) => total + account.balance, 0);
   }
 }
 

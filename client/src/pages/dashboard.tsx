@@ -1,11 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import TopAppBar from "@/components/top-app-bar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { TriangleAlert, DollarSignIcon, ShoppingCartIcon, UsersIcon, ShareIcon } from "lucide-react";
+import { TriangleAlert, DollarSignIcon, ShoppingCartIcon, UsersIcon, ShareIcon, PlusIcon, CreditCard, Wallet, PiggyBank, Building2, TrendingUpIcon } from "lucide-react";
 import { generateSocialPost } from "@/lib/social-sharing";
 import { useToast } from "@/hooks/use-toast";
+import AddAccountModal from "@/components/add-account-modal";
+import type { Account } from "@shared/schema";
 
 interface DashboardData {
   allergyCount: number;
@@ -29,9 +32,12 @@ interface DashboardData {
     isSettled: boolean;
     date: string;
   }>;
+  accounts: Account[];
+  totalBalance: number;
 }
 
 export default function Dashboard() {
+  const [isAddAccountModalOpen, setIsAddAccountModalOpen] = useState(false);
   const { toast } = useToast();
 
   const { data: dashboardData, isLoading } = useQuery<DashboardData>({
@@ -57,6 +63,21 @@ export default function Dashboard() {
       title: "Share text copied!",
       description: "Paste it on your favorite social platform.",
     });
+  };
+
+  const getAccountIcon = (iconName: string) => {
+    switch (iconName) {
+      case "CreditCard":
+        return CreditCard;
+      case "Wallet":
+        return Wallet;
+      case "PiggyBank":
+        return PiggyBank;
+      case "Building2":
+        return Building2;
+      default:
+        return CreditCard;
+    }
   };
 
   if (isLoading) {
@@ -87,6 +108,72 @@ export default function Dashboard() {
             <h2 className="text-2xl font-medium text-neutral-900 mb-2">Dashboard</h2>
             <p className="text-neutral-500 text-sm">Track your allergies and expenses</p>
           </div>
+
+          {/* Balance Overview */}
+          <Card className="bg-gradient-to-r from-primary to-secondary text-white border-0 card-shadow mb-6">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <p className="text-white/80 text-sm">Total Balance</p>
+                  <p className="text-3xl font-bold">
+                    ${dashboardData?.totalBalance?.toFixed(2) || '0.00'}
+                  </p>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <TrendingUpIcon className="h-5 w-5 text-white/80" />
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="bg-white/20 text-white hover:bg-white/30"
+                    onClick={() => setIsAddAccountModalOpen(true)}
+                  >
+                    <PlusIcon className="h-4 w-4 mr-2" />
+                    Add Account
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Accounts Grid */}
+          {dashboardData?.accounts && dashboardData.accounts.length > 0 && (
+            <div className="mb-6">
+              <h3 className="text-lg font-medium mb-3">Your Accounts</h3>
+              <div className="grid grid-cols-2 gap-3">
+                {dashboardData.accounts.map((account) => {
+                  const IconComponent = getAccountIcon(account.icon);
+                  return (
+                    <Card key={account.id} className="border-neutral-100 card-shadow">
+                      <CardContent className="p-3">
+                        <div className="flex items-center space-x-2 mb-2">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                            account.color === 'primary' ? 'bg-primary/10' :
+                            account.color === 'secondary' ? 'bg-secondary/10' :
+                            account.color === 'accent' ? 'bg-accent/10' :
+                            'bg-red-100'
+                          }`}>
+                            <IconComponent className={`h-4 w-4 ${
+                              account.color === 'primary' ? 'text-primary' :
+                              account.color === 'secondary' ? 'text-secondary' :
+                              account.color === 'accent' ? 'text-accent' :
+                              'text-red-600'
+                            }`} />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-xs text-neutral-900 truncate">{account.name}</p>
+                            <p className="text-xs text-neutral-500 capitalize">{account.type}</p>
+                          </div>
+                        </div>
+                        <p className="text-lg font-bold text-neutral-900">
+                          ${account.balance.toFixed(2)}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Summary Cards */}
           <div className="grid grid-cols-2 gap-4 mb-6">
@@ -232,6 +319,11 @@ export default function Dashboard() {
           </section>
         )}
       </main>
+      
+      <AddAccountModal 
+        isOpen={isAddAccountModalOpen} 
+        onClose={() => setIsAddAccountModalOpen(false)}
+      />
     </div>
   );
 }

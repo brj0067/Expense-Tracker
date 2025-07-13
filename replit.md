@@ -33,12 +33,13 @@ The application follows a mobile-first design approach with a maximum width cont
 ### Key Components
 
 #### Database Schema
-The application uses five main entities:
+The application uses six main entities:
 - **Users**: Basic user authentication and identification
 - **Allergies**: User's allergy information with severity and risk levels
 - **Expenses**: Expense tracking with allergy-safe categorization
 - **Roommates**: Roommate management for bill splitting
 - **Bill Splits**: Collaborative expense sharing functionality
+- **Accounts**: Financial account management (bank, cash, credit, savings) with balance tracking
 - **Activities**: Activity logging for user engagement tracking
 
 #### UI Components
@@ -49,11 +50,12 @@ The application uses five main entities:
 - Floating action button for quick expense addition
 
 #### Pages and Features
-- **Dashboard**: Overview of allergies, expenses, and recent activities
+- **Dashboard**: Overview of allergies, expenses, recent activities, account balances, and balance trends
 - **Analytics**: Data visualization and spending analysis
 - **Allergies**: Management of user's allergy information
 - **Expenses**: Expense tracking with allergy-safe filtering
-- **Roommates**: Roommate management and bill splitting
+- **Roommates**: Roommate management and bill splitting with improved UI using plus icons
+- **Account Management**: Add and manage multiple accounts (bank, cash, credit, savings) with balance tracking
 
 ## Data Flow
 
@@ -98,5 +100,16 @@ The application uses five main entities:
 - Database connection via `DATABASE_URL` environment variable
 - Separate development and production configurations
 - Session management with PostgreSQL backing store
+
+## Recent Changes
+
+### January 13, 2025
+- **Account Management System**: Added comprehensive account management with support for bank accounts, cash, credit cards, and savings accounts
+- **Balance Overview Widget**: Implemented total balance tracking and display on dashboard with gradient card design
+- **Account Cards Grid**: Created responsive account cards showing individual account balances with appropriate icons
+- **Add Account Modal**: Built form-based account creation with type selection and balance initialization
+- **API Integration**: Added full CRUD operations for accounts with proper validation
+- **UI Improvements**: Changed roommate section "Add" buttons to circular plus icons for better visual consistency
+- **Navigation Fix**: Resolved React DOM nesting warning in bottom navigation component
 
 The application architecture supports easy scaling from the current in-memory storage to full database persistence, with clear separation between the storage interface and implementation details.

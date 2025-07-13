@@ -18,15 +18,13 @@ export default function BottomNavigation() {
         {navItems.map(({ path, icon: Icon, label }) => {
           const isActive = location === path;
           return (
-            <Link key={path} href={path}>
-              <a className={`flex flex-col items-center p-3 transition-colors ${
-                isActive 
-                  ? "text-primary" 
-                  : "text-neutral-500 hover:text-primary"
-              }`}>
-                <Icon className="h-5 w-5 mb-1" />
-                <span className="text-xs font-medium">{label}</span>
-              </a>
+            <Link key={path} href={path} className={`flex flex-col items-center p-3 transition-colors ${
+              isActive 
+                ? "text-primary" 
+                : "text-neutral-500 hover:text-primary"
+            }`}>
+              <Icon className="h-5 w-5 mb-1" />
+              <span className="text-xs font-medium">{label}</span>
             </Link>
           );
         })}

@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { 
   insertAllergySchema, insertExpenseSchema, insertRoommateSchema, 
-  insertBillSplitSchema 
+  insertBillSplitSchema, insertAccountSchema 
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -17,12 +17,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const monthlyExpenses = await storage.getMonthlyExpenseTotal(DEMO_USER_ID);
       const recentActivities = await storage.getRecentActivitiesByUserId(DEMO_USER_ID, 5);
       const billSplits = await storage.getBillSplitsByUserId(DEMO_USER_ID);
+      const accounts = await storage.getAccountsByUserId(DEMO_USER_ID);
+      const totalBalance = await storage.getTotalBalance(DEMO_USER_ID);
 
       res.json({
         allergyCount: allergies.length,
         monthlyExpenses,
         recentActivities,
         activeBillSplits: billSplits.filter(split => !split.isSettled),
+        accounts,
+        totalBalance,
       });
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch dashboard data" });
@@ -197,6 +201,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ success: true });
     } catch (error) {
       res.status(400).json({ message: "Failed to settle bill split" });
+    }
+  });
+
+  // Accounts
+  app.get("/api/accounts", async (req, res) => {
+    try {
+      const accounts = await storage.getAccountsByUserId(DEMO_USER_ID);
+      res.json(accounts);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch accounts" });
+    }
+  });
+
+  app.post("/api/accounts", async (req, res) => {
+    try {
+      const data = insertAccountSchema.parse({ ...req.body, userId: DEMO_USER_ID });
+      const account = await storage.createAccount(data);
+      res.json(account);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid account data" });
+    }
+  });
+
+  app.put("/api/accounts/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const account = await storage.updateAccount(id, req.body);
+      if (!account) {
+        return res.status(404).json({ message: "Account not found" });
+      }
+      res.json(account);
+    } catch (error) {
+      res.status(400).json({ message: "Failed to update account" });
+    }
+  });
+
+  app.delete("/api/accounts/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const deleted = await storage.deleteAccount(id);
+      if (!deleted) {
+        return res.status(404).json({ message: "Account not found" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      res.status(400).json({ message: "Failed to delete account" });
     }
   });
 
