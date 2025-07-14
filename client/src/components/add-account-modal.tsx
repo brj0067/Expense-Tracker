@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -82,6 +82,9 @@ export default function AddAccountModal({ isOpen, onClose }: AddAccountModalProp
       <DialogContent className="max-w-sm mx-auto">
         <DialogHeader>
           <DialogTitle>Add New Account</DialogTitle>
+          <DialogDescription>
+            Create a new account to track your finances. Choose from bank accounts, cash, credit cards, or savings.
+          </DialogDescription>
         </DialogHeader>
         
         <Form {...form}>

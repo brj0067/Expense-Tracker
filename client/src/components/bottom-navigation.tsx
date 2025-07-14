@@ -9,7 +9,7 @@ export default function BottomNavigation() {
     { path: "/analytics", icon: ChartBarIcon, label: "Analytics" },
     { path: "/allergies", icon: ShieldIcon, label: "Allergies" },
     { path: "/expenses", icon: ReceiptIcon, label: "Expenses" },
-    { path: "/roommates", icon: UsersIcon, label: "Roommates" },
+    { path: "/roommates", icon: UsersIcon, label: "More" },
   ];
 
   return (

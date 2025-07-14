@@ -103,6 +103,16 @@ The application uses six main entities:
 
 ## Recent Changes
 
+### January 14, 2025
+- **Complete "More" Section Redesign**: Transformed roommates page into comprehensive "More" section with tabbed interface
+- **Multi-User Support**: Designed for normal persons, students, small business owners, and investment/trading users
+- **Tab Structure**: Added four main tabs - Share (group sharing), Invest (investments), Records (transaction records), More (settings & features)
+- **Group Sharing**: Renamed roommates to group members with enhanced bill splitting functionality for all user types
+- **Investment Features**: Added investment options section for stocks, crypto, and other financial instruments
+- **Transaction Records**: Comprehensive records management with export and reporting capabilities
+- **Settings & Upgrade**: Premium upgrade options, settings, social media links, help & support
+- **Accessibility Improvements**: Added dialog descriptions to fix accessibility warnings
+
 ### January 13, 2025
 - **Account Management System**: Added comprehensive account management with support for bank accounts, cash, credit cards, and savings accounts
 - **Balance Overview Widget**: Implemented total balance tracking and display on dashboard with gradient card design
