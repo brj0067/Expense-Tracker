@@ -9,7 +9,7 @@ import {
 export interface IStorage {
   // Users
   getUser(id: number): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
 
   // Allergies
@@ -76,8 +76,8 @@ export class MemStorage implements IStorage {
   private initializeData() {
     const demoUser: User = {
       id: 1,
-      username: "demo",
-      password: "demo",
+      email: "demo@example.com",
+      password: "$2a$10$6TwFe.Lh6aYTVPfLgpVz7u5xL7W2xL6ZvL.zL7xL6ZvL.zL7xL6Zv", // hashed password
     };
     this.users.set(1, demoUser);
 
@@ -111,8 +111,8 @@ export class MemStorage implements IStorage {
     return this.users.get(id);
   }
 
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(user => user.username === username);
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(user => user.email === email);
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {

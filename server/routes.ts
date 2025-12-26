@@ -1,24 +1,78 @@
-import type { Express } from "express";
+import type { Express, Request } from "express";
 import { createServer, type Server } from "http";
+import bcrypt from "bcryptjs";
 import { storage } from "./storage";
+import { requireAuth } from "./auth-middleware";
 import { 
   insertAllergySchema, insertExpenseSchema, insertRoommateSchema, 
-  insertBillSplitSchema, insertAccountSchema 
+  insertBillSplitSchema, insertAccountSchema, insertUserSchema 
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Auth Routes
+  app.post("/api/auth/register", async (req, res) => {
+    try {
+      const { email, password } = insertUserSchema.parse(req.body);
+      const existingUser = await storage.getUserByEmail(email);
+      if (existingUser) {
+        return res.status(400).json({ message: "Email already registered" });
+      }
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const user = await storage.createUser({ email, password: hashedPassword });
+      (req.session as any).userId = user.id;
+      res.json({ id: user.id, email: user.email });
+    } catch (error) {
+      res.status(400).json({ message: "Invalid registration data" });
+    }
+  });
+
+  app.post("/api/auth/login", async (req, res) => {
+    try {
+      const { email, password } = insertUserSchema.parse(req.body);
+      const user = await storage.getUserByEmail(email);
+      if (!user || !await bcrypt.compare(password, user.password)) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+      (req.session as any).userId = user.id;
+      res.json({ id: user.id, email: user.email });
+    } catch (error) {
+      res.status(400).json({ message: "Login failed" });
+    }
+  });
+
+  app.post("/api/auth/logout", (req, res) => {
+    req.session.destroy((err) => {
+      if (err) return res.status(500).json({ message: "Logout failed" });
+      res.json({ success: true });
+    });
+  });
+
+  app.get("/api/auth/me", requireAuth, async (req, res) => {
+    try {
+      const user = await storage.getUser((req.session as any).userId!);
+      if (!user) return res.status(404).json({ message: "User not found" });
+      res.json({ id: user.id, email: user.email });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch user" });
+    }
+  });
+
+  // Helper to get user ID from session, fallback to demo for backwards compatibility
+  const getUserId = (req: Request): number => (req.session as any).userId || 1;
+
   // Default user ID for demo (in real app, this would come from authentication)
   const DEMO_USER_ID = 1;
 
   // Dashboard data
   app.get("/api/dashboard", async (req, res) => {
     try {
-      const allergies = await storage.getAllergiesByUserId(DEMO_USER_ID);
-      const monthlyExpenses = await storage.getMonthlyExpenseTotal(DEMO_USER_ID);
-      const recentActivities = await storage.getRecentActivitiesByUserId(DEMO_USER_ID, 5);
-      const billSplits = await storage.getBillSplitsByUserId(DEMO_USER_ID);
-      const accounts = await storage.getAccountsByUserId(DEMO_USER_ID);
-      const totalBalance = await storage.getTotalBalance(DEMO_USER_ID);
+      const userId = getUserId(req);
+      const allergies = await storage.getAllergiesByUserId(userId);
+      const monthlyExpenses = await storage.getMonthlyExpenseTotal(userId);
+      const recentActivities = await storage.getRecentActivitiesByUserId(userId, 5);
+      const billSplits = await storage.getBillSplitsByUserId(userId);
+      const accounts = await storage.getAccountsByUserId(userId);
+      const totalBalance = await storage.getTotalBalance(userId);
 
       res.json({
         allergyCount: allergies.length,
@@ -36,7 +90,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Allergies
   app.get("/api/allergies", async (req, res) => {
     try {
-      const allergies = await storage.getAllergiesByUserId(DEMO_USER_ID);
+      const userId = getUserId(req);
+      const allergies = await storage.getAllergiesByUserId(userId);
       res.json(allergies);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch allergies" });
@@ -45,7 +100,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/allergies", async (req, res) => {
     try {
-      const data = insertAllergySchema.parse({ ...req.body, userId: DEMO_USER_ID });
+      const userId = getUserId(req);
+      const data = insertAllergySchema.parse({ ...req.body, userId });
       const allergy = await storage.createAllergy(data);
       res.json(allergy);
     } catch (error) {
@@ -82,7 +138,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Expenses
   app.get("/api/expenses", async (req, res) => {
     try {
-      const expenses = await storage.getExpensesByUserId(DEMO_USER_ID);
+      const userId = getUserId(req);
+      const expenses = await storage.getExpensesByUserId(userId);
       res.json(expenses);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch expenses" });
@@ -91,7 +148,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/expenses", async (req, res) => {
     try {
-      const data = insertExpenseSchema.parse({ ...req.body, userId: DEMO_USER_ID });
+      const userId = getUserId(req);
+      const data = insertExpenseSchema.parse({ ...req.body, userId });
       const expense = await storage.createExpense(data);
       res.json(expense);
     } catch (error) {
@@ -128,7 +186,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Roommates
   app.get("/api/roommates", async (req, res) => {
     try {
-      const roommates = await storage.getRoommatesByUserId(DEMO_USER_ID);
+      const userId = getUserId(req);
+      const roommates = await storage.getRoommatesByUserId(userId);
       res.json(roommates);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch roommates" });
@@ -137,7 +196,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/roommates", async (req, res) => {
     try {
-      const data = insertRoommateSchema.parse({ ...req.body, userId: DEMO_USER_ID });
+      const userId = getUserId(req);
+      const data = insertRoommateSchema.parse({ ...req.body, userId });
       const roommate = await storage.createRoommate(data);
       res.json(roommate);
     } catch (error) {
@@ -174,7 +234,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Bill Splits
   app.get("/api/bill-splits", async (req, res) => {
     try {
-      const billSplits = await storage.getBillSplitsByUserId(DEMO_USER_ID);
+      const userId = getUserId(req);
+      const billSplits = await storage.getBillSplitsByUserId(userId);
       res.json(billSplits);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch bill splits" });
@@ -183,7 +244,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/bill-splits", async (req, res) => {
     try {
-      const data = insertBillSplitSchema.parse({ ...req.body, creatorId: DEMO_USER_ID });
+      const userId = getUserId(req);
+      const data = insertBillSplitSchema.parse({ ...req.body, creatorId: userId });
       const billSplit = await storage.createBillSplit(data);
       res.json(billSplit);
     } catch (error) {
@@ -207,7 +269,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Accounts
   app.get("/api/accounts", async (req, res) => {
     try {
-      const accounts = await storage.getAccountsByUserId(DEMO_USER_ID);
+      const userId = getUserId(req);
+      const accounts = await storage.getAccountsByUserId(userId);
       res.json(accounts);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch accounts" });
@@ -216,7 +279,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/accounts", async (req, res) => {
     try {
-      const data = insertAccountSchema.parse({ ...req.body, userId: DEMO_USER_ID });
+      const userId = getUserId(req);
+      const data = insertAccountSchema.parse({ ...req.body, userId });
       const account = await storage.createAccount(data);
       res.json(account);
     } catch (error) {
@@ -253,8 +317,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Social sharing achievements
   app.get("/api/achievements", async (req, res) => {
     try {
-      const allergies = await storage.getAllergiesByUserId(DEMO_USER_ID);
-      const expenses = await storage.getExpensesByUserId(DEMO_USER_ID);
+      const userId = getUserId(req);
+      const allergies = await storage.getAllergiesByUserId(userId);
+      const expenses = await storage.getExpensesByUserId(userId);
       const allergySafeExpenses = expenses.filter(e => e.isAllergySafe);
       
       res.json({
