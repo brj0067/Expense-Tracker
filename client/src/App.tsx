@@ -19,6 +19,30 @@ import FloatingActionButton from "@/components/floating-action-button";
 import { useState } from "react";
 import AddExpenseModal from "@/components/add-expense-modal";
 
+function AppShell() {
+  const [isAddExpenseModalOpen, setIsAddExpenseModalOpen] = useState(false);
+  return (
+    <div className="min-h-screen max-w-md mx-auto bg-white shadow-lg relative">
+      <Switch>
+        <Route path="/" component={Dashboard} />
+        <Route path="/analytics" component={Analytics} />
+        <Route path="/allergies" component={Allergies} />
+        <Route path="/expenses" component={Expenses} />
+        <Route path="/roommates" component={Roommates} />
+        <Route path="/profile" component={Profile} />
+        <Route path="/pricing" component={Pricing} />
+        <Route component={NotFound} />
+      </Switch>
+      <FloatingActionButton onClick={() => setIsAddExpenseModalOpen(true)} />
+      <BottomNavigation />
+      <AddExpenseModal 
+        isOpen={isAddExpenseModalOpen} 
+        onClose={() => setIsAddExpenseModalOpen(false)}
+      />
+    </div>
+  );
+}
+
 function Router() {
   const { user, isLoading } = useAuth();
 
@@ -36,39 +60,7 @@ function Router() {
     );
   }
 
-  return (
-    <Switch>
-      <Route path="/" component={Dashboard} />
-      <Route path="/analytics" component={Analytics} />
-      <Route path="/allergies" component={Allergies} />
-      <Route path="/expenses" component={Expenses} />
-      <Route path="/roommates" component={Roommates} />
-      <Route path="/profile" component={Profile} />
-      <Route path="/pricing" component={Pricing} />
-      <Route component={NotFound} />
-    </Switch>
-  );
-}
-
-function AppContent() {
-  const { user } = useAuth();
-  const [isAddExpenseModalOpen, setIsAddExpenseModalOpen] = useState(false);
-
-  if (!user) {
-    return <Router />;
-  }
-
-  return (
-    <div className="min-h-screen max-w-md mx-auto bg-white shadow-lg relative">
-      <Router />
-      <FloatingActionButton onClick={() => setIsAddExpenseModalOpen(true)} />
-      <BottomNavigation />
-      <AddExpenseModal 
-        isOpen={isAddExpenseModalOpen} 
-        onClose={() => setIsAddExpenseModalOpen(false)}
-      />
-    </div>
-  );
+  return <AppShell />;
 }
 
 function App() {
@@ -76,7 +68,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <TooltipProvider>
-          <AppContent />
+          <Router />
           <Toaster />
         </TooltipProvider>
       </AuthProvider>
