@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import bcrypt from "bcryptjs";
 import { storage } from "./storage";
 import { requireAuth } from "./auth-middleware";
+import { stripe, STRIPE_PUBLISHABLE_KEY, PRO_PRICE_ID, WEBHOOK_SECRET, BILLING_ENABLED } from "./stripe-config";
 import { 
   insertAllergySchema, insertExpenseSchema, insertRoommateSchema, 
   insertBillSplitSchema, insertAccountSchema, insertUserSchema 
@@ -51,11 +52,101 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const user = await storage.getUser((req.session as any).userId!);
       if (!user) return res.status(404).json({ message: "User not found" });
-      res.json({ id: user.id, email: user.email });
+      res.json({ id: user.id, email: user.email, plan: user.plan, stripeCustomerId: user.stripeCustomerId });
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch user" });
     }
   });
+
+  // Billing Routes
+  if (BILLING_ENABLED && stripe) {
+    app.post("/api/billing/create-checkout-session", requireAuth, async (req, res) => {
+      try {
+        const userId = (req.session as any).userId!;
+        const user = await storage.getUser(userId);
+        if (!user) return res.status(404).json({ message: "User not found" });
+
+        const session = await stripe!.checkout.sessions.create({
+          customer_email: user.email,
+          mode: "subscription",
+          line_items: [{ price: PRO_PRICE_ID, quantity: 1 }],
+          success_url: `${process.env.FRONTEND_URL || "http://localhost:5000"}/profile?session_id={CHECKOUT_SESSION_ID}`,
+          cancel_url: `${process.env.FRONTEND_URL || "http://localhost:5000"}/pricing`,
+          metadata: { userId: userId.toString() },
+        });
+
+        res.json({ sessionId: session.id, publishableKey: STRIPE_PUBLISHABLE_KEY });
+      } catch (error) {
+        console.error("Checkout session error:", error);
+        res.status(500).json({ message: "Failed to create checkout session" });
+      }
+    });
+
+    app.post("/api/billing/create-portal-session", requireAuth, async (req, res) => {
+      try {
+        const userId = (req.session as any).userId!;
+        const user = await storage.getUser(userId);
+        if (!user || !user.stripeCustomerId) {
+          return res.status(400).json({ message: "No subscription found" });
+        }
+
+        const session = await stripe!.billingPortal.sessions.create({
+          customer: user.stripeCustomerId,
+          return_url: `${process.env.FRONTEND_URL || "http://localhost:5000"}/profile`,
+        });
+
+        res.json({ url: session.url });
+      } catch (error) {
+        console.error("Portal session error:", error);
+        res.status(500).json({ message: "Failed to create portal session" });
+      }
+    });
+
+    app.post("/api/billing/webhook", async (req, res) => {
+      const sig = req.headers["stripe-signature"] as string;
+      try {
+        const body = JSON.stringify(req.body);
+        const event = stripe!.webhooks.constructEvent(body, sig, WEBHOOK_SECRET);
+
+        if (event.type === "customer.subscription.updated" || event.type === "customer.subscription.created") {
+          const subscription = event.data.object as any;
+          const userId = subscription.metadata?.userId;
+          if (userId) {
+            await storage.updateUserBilling(parseInt(userId), {
+              plan: subscription.status === "active" ? "pro" : "free",
+              stripeCustomerId: subscription.customer,
+              subscriptionStatus: subscription.status,
+            });
+          }
+        } else if (event.type === "customer.subscription.deleted") {
+          const subscription = event.data.object as any;
+          const userId = subscription.metadata?.userId;
+          if (userId) {
+            await storage.updateUserBilling(parseInt(userId), {
+              plan: "free",
+              subscriptionStatus: "canceled",
+            });
+          }
+        }
+
+        res.json({ received: true });
+      } catch (error) {
+        console.error("Webhook error:", error);
+        res.status(400).json({ message: "Webhook error" });
+      }
+    });
+  } else {
+    // Stub endpoints if billing disabled
+    app.post("/api/billing/create-checkout-session", requireAuth, (req, res) => {
+      res.status(403).json({ message: "Billing not enabled" });
+    });
+    app.post("/api/billing/create-portal-session", requireAuth, (req, res) => {
+      res.status(403).json({ message: "Billing not enabled" });
+    });
+    app.post("/api/billing/webhook", (req, res) => {
+      res.json({ received: true });
+    });
+  }
 
   // Helper to get user ID from session, fallback to demo for backwards compatibility
   const getUserId = (req: Request): number => (req.session as any).userId || 1;

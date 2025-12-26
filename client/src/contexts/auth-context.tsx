@@ -3,6 +3,8 @@ import { createContext, useContext, useState, useEffect, ReactNode } from "react
 interface User {
   id: number;
   email: string;
+  plan?: "free" | "pro";
+  stripeCustomerId?: string;
 }
 
 interface AuthContextType {

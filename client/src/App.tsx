@@ -10,6 +10,7 @@ import Allergies from "@/pages/allergies";
 import Expenses from "@/pages/expenses";
 import Roommates from "@/pages/roommates";
 import Profile from "@/pages/profile";
+import Pricing from "@/pages/pricing";
 import Login from "@/pages/login";
 import Signup from "@/pages/signup";
 import NotFound from "@/pages/not-found";
@@ -43,6 +44,7 @@ function Router() {
       <Route path="/expenses" component={Expenses} />
       <Route path="/roommates" component={Roommates} />
       <Route path="/profile" component={Profile} />
+      <Route path="/pricing" component={Pricing} />
       <Route component={NotFound} />
     </Switch>
   );

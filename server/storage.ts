@@ -11,6 +11,7 @@ export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  updateUserBilling(id: number, billing: { plan?: string; stripeCustomerId?: string; subscriptionStatus?: string }): Promise<User | undefined>;
 
   // Allergies
   getAllergiesByUserId(userId: number): Promise<Allergy[]>;
@@ -78,6 +79,9 @@ export class MemStorage implements IStorage {
       id: 1,
       email: "demo@example.com",
       password: "$2a$10$6TwFe.Lh6aYTVPfLgpVz7u5xL7W2xL6ZvL.zL7xL6ZvL.zL7xL6Zv", // hashed password
+      plan: "free",
+      stripeCustomerId: null,
+      subscriptionStatus: null,
     };
     this.users.set(1, demoUser);
 
@@ -117,9 +121,17 @@ export class MemStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.currentId++;
-    const user: User = { ...insertUser, id };
+    const user: User = { ...insertUser, id, plan: "free", stripeCustomerId: null, subscriptionStatus: null };
     this.users.set(id, user);
     return user;
+  }
+
+  async updateUserBilling(id: number, billing: { plan?: string; stripeCustomerId?: string; subscriptionStatus?: string }): Promise<User | undefined> {
+    const user = this.users.get(id);
+    if (!user) return undefined;
+    const updated = { ...user, ...billing };
+    this.users.set(id, updated);
+    return updated;
   }
 
   async getAllergiesByUserId(userId: number): Promise<Allergy[]> {

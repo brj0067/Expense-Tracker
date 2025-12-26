@@ -6,6 +6,9 @@ export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   email: text("email").notNull().unique(),
   password: text("password").notNull(),
+  plan: text("plan").default("free").notNull(), // "free" or "pro"
+  stripeCustomerId: text("stripe_customer_id"),
+  subscriptionStatus: text("subscription_status"), // "active", "canceled", "past_due", etc.
 });
 
 export const allergies = pgTable("allergies", {
@@ -74,6 +77,12 @@ export const activities = pgTable("activities", {
 export const insertUserSchema = createInsertSchema(users).pick({
   email: true,
   password: true,
+});
+
+export const updateUserBillingSchema = z.object({
+  plan: z.enum(["free", "pro"]).optional(),
+  stripeCustomerId: z.string().optional(),
+  subscriptionStatus: z.string().optional(),
 });
 
 export const insertAllergySchema = createInsertSchema(allergies).pick({

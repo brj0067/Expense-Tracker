@@ -103,6 +103,22 @@ The application uses six main entities:
 
 ## Recent Changes
 
+### December 26, 2025
+- **User Authentication System**: Added email/password registration and login with bcrypt password hashing
+- **Session Management**: Implemented httpOnly cookie-based sessions to secure user sessions across requests
+- **Auth Routes**: Created 4 auth endpoints (POST /api/auth/register, /api/auth/login, POST /api/auth/logout, GET /api/auth/me)
+- **Frontend Auth Context**: Built AuthProvider for managing user login state across the application
+- **Protected Routes**: Added Login, Signup, and Profile pages with route protection for authenticated users
+- **Auth Middleware**: Implemented requireAuth middleware to protect API endpoints
+
+- **Stripe Payment Integration**: Added complete payment system with feature flag (BILLING_ENABLED env var)
+- **Pricing Page**: Created pricing page with Free and Pro plans side-by-side comparison
+- **Billing Endpoints**: Added 3 Stripe routes (POST /api/billing/create-checkout-session, /api/billing/create-portal-session, /api/billing/webhook)
+- **User Billing Fields**: Extended users table with plan (free/pro), stripeCustomerId, and subscriptionStatus
+- **Stripe Webhooks**: Implemented webhook handler for subscription lifecycle events (created, updated, deleted)
+- **Upgrade UI**: Added upgrade buttons in pricing page and profile page with Stripe Checkout integration
+- **Subscription Management**: Added manage subscription button for Pro users to access Stripe billing portal
+
 ### January 14, 2025
 - **Complete "More" Section Redesign**: Transformed roommates page into comprehensive "More" section with tabbed interface
 - **Multi-User Support**: Designed for normal persons, students, small business owners, and investment/trading users
@@ -121,5 +137,22 @@ The application uses six main entities:
 - **API Integration**: Added full CRUD operations for accounts with proper validation
 - **UI Improvements**: Changed roommate section "Add" buttons to circular plus icons for better visual consistency
 - **Navigation Fix**: Resolved React DOM nesting warning in bottom navigation component
+
+## Environment Variables
+
+### Billing Configuration (Optional - set these to enable Stripe)
+- `BILLING_ENABLED`: Set to "true" to enable Stripe billing features
+- `STRIPE_PUBLISHABLE_KEY`: Your Stripe publishable key (frontend checkout)
+- `STRIPE_SECRET_KEY`: Your Stripe secret key (backend processing)
+- `STRIPE_PRO_PRICE_ID`: Stripe price ID for Pro plan (format: price_xxx)
+- `STRIPE_WEBHOOK_SECRET`: Webhook signing secret from Stripe dashboard
+
+### Webhook URL
+When Stripe is enabled, configure webhooks at: `https://your-domain.com/api/billing/webhook`
+
+Listen for these events:
+- customer.subscription.created
+- customer.subscription.updated
+- customer.subscription.deleted
 
 The application architecture supports easy scaling from the current in-memory storage to full database persistence, with clear separation between the storage interface and implementation details.
