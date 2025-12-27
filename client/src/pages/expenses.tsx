@@ -54,7 +54,7 @@ export default function Expenses() {
     return matchesSearch && matchesCategory && matchesAllergy;
   }) || [];
 
-  const categories = [...new Set(expenses?.map(e => e.category) || [])];
+  const categories = Array.from(new Set(expenses?.map(e => e.category) || []));
   const totalAmount = filteredExpenses.reduce((sum, expense) => sum + expense.amount, 0);
 
   if (isLoading) {
@@ -178,6 +178,7 @@ export default function Expenses() {
                           onClick={() => deleteExpenseMutation.mutate(expense.id)}
                           disabled={deleteExpenseMutation.isPending}
                           className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          data-testid={`button-delete-expense-${expense.id}`}
                         >
                           <TrashIcon className="h-4 w-4" />
                         </Button>

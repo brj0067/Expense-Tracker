@@ -125,9 +125,10 @@ export default function AddExpenseModal({ isOpen, onClose }: AddExpenseModalProp
                     <Input 
                       type="number" 
                       step="0.01" 
-                      placeholder="0.00" 
-                      {...field}
+                      placeholder="0.00"
+                      value={field.value || ""}
                       onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                      data-testid="input-amount"
                     />
                   </FormControl>
                   <FormMessage />
@@ -142,7 +143,7 @@ export default function AddExpenseModal({ isOpen, onClose }: AddExpenseModalProp
                 <FormItem>
                   <FormLabel>Description</FormLabel>
                   <FormControl>
-                    <Input placeholder="What did you buy?" {...field} />
+                    <Input placeholder="What did you buy?" {...field} data-testid="input-description" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -230,6 +231,7 @@ export default function AddExpenseModal({ isOpen, onClose }: AddExpenseModalProp
                 type="submit" 
                 className="flex-1"
                 disabled={createExpenseMutation.isPending}
+                data-testid="button-add-expense"
               >
                 {createExpenseMutation.isPending ? "Adding..." : "Add Expense"}
               </Button>
