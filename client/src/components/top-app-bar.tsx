@@ -1,4 +1,4 @@
-import { Wallet, SearchIcon, UserCircleIcon } from "lucide-react";
+import { Wallet, Bell, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
 
@@ -18,20 +18,20 @@ export default function TopAppBar() {
             variant="ghost"
             size="icon"
             className="text-white hover:bg-primary-foreground/20"
-            onClick={() => setLocation("/expenses")}
-            aria-label="Search expenses"
+            onClick={() => setLocation("/notifications")}
+            aria-label="Notifications"
           >
-            <SearchIcon className="h-5 w-5" />
+            <Bell className="h-5 w-5" />
           </Button>
 
           <Button
             variant="ghost"
             size="icon"
             className="text-white hover:bg-primary-foreground/20"
-            onClick={() => setLocation("/profile")}
-            aria-label="User profile"
+            onClick={() => setLocation("/settings")}
+            aria-label="Settings"
           >
-            <UserCircleIcon className="h-6 w-6" />
+            <Settings className="h-5 w-5" />
           </Button>
         </div>
       </div>
