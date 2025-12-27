@@ -5,31 +5,48 @@ import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
 
+// IMPORTANT for Render (behind proxy) so secure cookies work
+app.set("trust proxy", 1);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-app.use(session({
-  secret: process.env.SESSION_SECRET || "dev-secret",
-  resave: false,
-  saveUninitialized: false,
-  cookie: { 
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    maxAge: 1000 * 60 * 60 * 24 * 7 // 7 days
-  },
-}));
+// Session / cookies (Vercel frontend + Render backend cross-domain fix)
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || "dev-secret",
+    resave: false,
+    saveUninitialized: false,
+    proxy: true,
+    cookie: {
+      httpOnly: true,
+      secure: true, // required for SameSite=None on HTTPS
+      sameSite: "none", // REQUIRED to allow cookies across domains
+      maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+    },
+  })
+);
 
+// CORS headers (must allow credentials + exact origin)
 app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL || "http://localhost:5000");
+  const origin =
+    process.env.CORS_ORIGIN ||
+    process.env.FRONTEND_URL ||
+    "http://localhost:5173";
+
+  res.header("Access-Control-Allow-Origin", origin);
+  res.header("Vary", "Origin"); // helps caches/CDNs handle per-origin responses
   res.header("Access-Control-Allow-Credentials", "true");
   res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
   res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+
   if (req.method === "OPTIONS") {
     return res.sendStatus(200);
   }
   next();
 });
 
+// Logging middleware (unchanged)
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
@@ -71,24 +88,23 @@ app.use((req, res, next) => {
     throw err;
   });
 
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
+  // Setup Vite in development; serve static in production
   if (app.get("env") === "development") {
     await setupVite(app, server);
   } else {
     serveStatic(app);
   }
 
-  // ALWAYS serve the app on port 5000
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
+  // Render will supply PORT; fallback is for local use
   const port = process.env.PORT || 5000;
-  server.listen({
-    port,
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
-    log(`serving on port ${port}`);
-  });
+  server.listen(
+    {
+      port,
+      host: "0.0.0.0",
+      reusePort: true,
+    },
+    () => {
+      log(`serving on port ${port}`);
+    }
+  );
 })();
