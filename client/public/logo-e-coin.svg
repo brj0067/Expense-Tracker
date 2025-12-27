@@ -18,5 +18,5 @@
   <circle cx="128" cy="128" r="120" fill="url(#goldGlow)" filter="url(#softShadow)"/>
   <circle cx="128" cy="128" r="120" fill="none" stroke="url(#rim)" stroke-width="8"/>
   <circle cx="128" cy="128" r="100" fill="none" stroke="#d6a338" stroke-width="2" opacity="0.6"/>
-  <text x="128" y="180" font-family="Arial, sans-serif" font-size="140" font-weight="bold" fill="#2c5f2d" text-anchor="middle" opacity="0.9">E</text>
+  <text x="128" y="180" font-family="Arial, sans-serif" font-size="140" font-weight="bold" fill="#2c5f2d" text-anchor="middle" opacity="0.9" aria-hidden="true">E</text>
 </svg>
