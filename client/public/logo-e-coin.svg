@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="E coin">
+  <defs>
+    <radialGradient id="goldGlow" cx="35%" cy="30%" r="75%">
+      <stop offset="0%" stop-color="#fff2b2"/>
+      <stop offset="35%" stop-color="#ffd36b"/>
+      <stop offset="70%" stop-color="#d6a338"/>
+      <stop offset="100%" stop-color="#8a5b16"/>
+    </radialGradient>
+    <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fff0a6"/>
+      <stop offset="45%" stop-color="#e4b84b"/>
+      <stop offset="100%" stop-color="#7a4d10"/>
+    </linearGradient>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#000" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+  <circle cx="128" cy="128" r="120" fill="url(#goldGlow)" filter="url(#softShadow)"/>
+  <circle cx="128" cy="128" r="120" fill="none" stroke="url(#rim)" stroke-width="8"/>
+  <circle cx="128" cy="128" r="100" fill="none" stroke="#d6a338" stroke-width="2" opacity="0.6"/>
+  <text x="128" y="180" font-family="Arial, sans-serif" font-size="140" font-weight="bold" fill="#2c5f2d" text-anchor="middle" opacity="0.9">E</text>
+</svg>
