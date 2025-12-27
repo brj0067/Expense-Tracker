@@ -1,9 +1,9 @@
 import { 
-  users, allergies, expenses, roommates, billSplits, activities, accounts,
+  users, allergies, expenses, roommates, billSplits, activities, accounts, budgets,
   type User, type InsertUser, type Allergy, type InsertAllergy,
   type Expense, type InsertExpense, type Roommate, type InsertRoommate,
   type BillSplit, type InsertBillSplit, type Activity, type InsertActivity,
-  type Account, type InsertAccount
+  type Account, type InsertAccount, type Budget, type InsertBudget
 } from "@shared/schema";
 
 export interface IStorage {
@@ -48,6 +48,12 @@ export interface IStorage {
   // Activities
   getRecentActivitiesByUserId(userId: number, limit?: number): Promise<Activity[]>;
   createActivity(activity: InsertActivity): Promise<Activity>;
+
+  // Budgets
+  getBudgetsByUserId(userId: number): Promise<Budget[]>;
+  createBudget(budget: InsertBudget): Promise<Budget>;
+  updateBudget(id: number, budget: Partial<Budget>): Promise<Budget | undefined>;
+  deleteBudget(id: number): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -58,6 +64,7 @@ export class MemStorage implements IStorage {
   private billSplits: Map<number, BillSplit>;
   private activities: Map<number, Activity>;
   private accounts: Map<number, Account>;
+  private budgets: Map<number, Budget>;
   private currentId: number;
 
   constructor() {
@@ -68,6 +75,7 @@ export class MemStorage implements IStorage {
     this.billSplits = new Map();
     this.activities = new Map();
     this.accounts = new Map();
+    this.budgets = new Map();
     this.currentId = 1;
 
     // Initialize with demo user and data
@@ -107,6 +115,14 @@ export class MemStorage implements IStorage {
       { id: 5, userId: 1, name: "Savings", type: "savings", balance: 8900.00, color: "accent", icon: "PiggyBank" },
     ];
     demoAccounts.forEach(account => this.accounts.set(account.id, account));
+
+    // Demo budgets
+    const demoBudgets: Budget[] = [
+      { id: 1, userId: 1, category: "groceries", limit: 300, date: new Date() },
+      { id: 2, userId: 1, category: "restaurants", limit: 150, date: new Date() },
+      { id: 3, userId: 1, category: "healthcare", limit: 200, date: new Date() },
+    ];
+    demoBudgets.forEach(budget => this.budgets.set(budget.id, budget));
 
     this.currentId = 6;
   }
@@ -348,6 +364,33 @@ export class MemStorage implements IStorage {
     return Array.from(this.accounts.values())
       .filter(account => account.userId === userId)
       .reduce((total, account) => total + account.balance, 0);
+  }
+
+  async getBudgetsByUserId(userId: number): Promise<Budget[]> {
+    return Array.from(this.budgets.values()).filter(budget => budget.userId === userId);
+  }
+
+  async createBudget(insertBudget: InsertBudget): Promise<Budget> {
+    const id = this.currentId++;
+    const budget: Budget = { 
+      ...insertBudget, 
+      id,
+      date: new Date(),
+    };
+    this.budgets.set(id, budget);
+    return budget;
+  }
+
+  async updateBudget(id: number, budget: Partial<Budget>): Promise<Budget | undefined> {
+    const existing = this.budgets.get(id);
+    if (!existing) return undefined;
+    const updated = { ...existing, ...budget };
+    this.budgets.set(id, updated);
+    return updated;
+  }
+
+  async deleteBudget(id: number): Promise<boolean> {
+    return this.budgets.delete(id);
   }
 }
 

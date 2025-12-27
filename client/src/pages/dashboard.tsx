@@ -204,20 +204,6 @@ export default function Dashboard() {
             </Card>
           </div>
 
-          {/* Quick Actions */}
-          <div className="mb-6">
-            <h3 className="text-lg font-medium mb-3">Quick Actions</h3>
-            <div className="grid grid-cols-2 gap-3">
-              <Button variant="outline" className="p-4 h-auto flex-col space-y-2 border-neutral-100 hover:border-primary">
-                <DollarSignIcon className="h-6 w-6 text-primary" />
-                <span className="text-sm font-medium">Add Expense</span>
-              </Button>
-              <Button variant="outline" className="p-4 h-auto flex-col space-y-2 border-neutral-100 hover:border-accent">
-                <TriangleAlert className="h-6 w-6 text-accent" />
-                <span className="text-sm font-medium">Check Product</span>
-              </Button>
-            </div>
-          </div>
         </section>
 
         {/* Recent Activity */}

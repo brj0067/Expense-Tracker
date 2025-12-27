@@ -73,6 +73,14 @@ export const activities = pgTable("activities", {
   date: timestamp("date").defaultNow().notNull(),
 });
 
+export const budgets = pgTable("budgets", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  category: text("category").notNull(),
+  limit: real("limit").notNull(),
+  date: timestamp("date").defaultNow().notNull(),
+});
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).pick({
   email: true,
@@ -137,6 +145,12 @@ export const insertActivitySchema = createInsertSchema(activities).pick({
   tags: true,
 });
 
+export const insertBudgetSchema = createInsertSchema(budgets).pick({
+  userId: true,
+  category: true,
+  limit: true,
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -152,3 +166,5 @@ export type Account = typeof accounts.$inferSelect;
 export type InsertAccount = z.infer<typeof insertAccountSchema>;
 export type Activity = typeof activities.$inferSelect;
 export type InsertActivity = z.infer<typeof insertActivitySchema>;
+export type Budget = typeof budgets.$inferSelect;
+export type InsertBudget = z.infer<typeof insertBudgetSchema>;

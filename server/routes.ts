@@ -6,7 +6,7 @@ import { requireAuth } from "./auth-middleware";
 import { stripe, STRIPE_PUBLISHABLE_KEY, PRO_PRICE_ID, WEBHOOK_SECRET, BILLING_ENABLED } from "./stripe-config";
 import { 
   insertAllergySchema, insertExpenseSchema, insertRoommateSchema, 
-  insertBillSplitSchema, insertAccountSchema, insertUserSchema 
+  insertBillSplitSchema, insertAccountSchema, insertUserSchema, insertBudgetSchema
 } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -402,6 +402,82 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ success: true });
     } catch (error) {
       res.status(400).json({ message: "Failed to delete account" });
+    }
+  });
+
+  // Budgets
+  app.get("/api/budgets", async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const budgets = await storage.getBudgetsByUserId(userId);
+      res.json(budgets);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch budgets" });
+    }
+  });
+
+  app.post("/api/budgets", async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const data = insertBudgetSchema.parse({ ...req.body, userId });
+      const budget = await storage.createBudget(data);
+      res.json(budget);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid budget data" });
+    }
+  });
+
+  app.put("/api/budgets/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const budget = await storage.updateBudget(id, req.body);
+      if (!budget) {
+        return res.status(404).json({ message: "Budget not found" });
+      }
+      res.json(budget);
+    } catch (error) {
+      res.status(400).json({ message: "Failed to update budget" });
+    }
+  });
+
+  app.delete("/api/budgets/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const deleted = await storage.deleteBudget(id);
+      if (!deleted) {
+        return res.status(404).json({ message: "Budget not found" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      res.status(400).json({ message: "Failed to delete budget" });
+    }
+  });
+
+  app.get("/api/budgets/status/:category", async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const category = req.params.category;
+      const budgets = await storage.getBudgetsByUserId(userId);
+      const budget = budgets.find(b => b.category === category);
+      if (!budget) {
+        return res.status(404).json({ message: "Budget not found" });
+      }
+      const expenses = await storage.getExpensesByUserId(userId);
+      const now = new Date();
+      const currentMonth = now.getMonth();
+      const currentYear = now.getFullYear();
+      const spentThisMonth = expenses
+        .filter(e => {
+          const eDate = new Date(e.date);
+          return eDate.getMonth() === currentMonth && eDate.getFullYear() === currentYear && e.category === category;
+        })
+        .reduce((sum, e) => sum + e.amount, 0);
+      const remaining = budget.limit - spentThisMonth;
+      const percentUsed = (spentThisMonth / budget.limit) * 100;
+      const status = percentUsed >= 100 ? "EXCEEDED" : percentUsed >= 80 ? "WARNING" : "OK";
+      res.json({ spentThisMonth, remaining, percentUsed, status, limit: budget.limit });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to compute budget status" });
     }
   });
 
