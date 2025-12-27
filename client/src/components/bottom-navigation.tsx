@@ -1,14 +1,14 @@
 import { Link, useLocation } from "wouter";
-import { HomeIcon, ChartBarIcon, Wallet, ReceiptIcon, UsersIcon } from "lucide-react";
+import { HomeIcon, Wallet, ReceiptIcon, Settings } from "lucide-react";
 
 export default function BottomNavigation() {
   const [location] = useLocation();
 
   const navItems = [
     { path: "/", icon: HomeIcon, label: "Home" },
-    { path: "/roommates", icon: Wallet, label: "Budgets" },
+    { path: "/budgets", icon: Wallet, label: "Budgets" },
     { path: "/expenses", icon: ReceiptIcon, label: "Expenses" },
-    { path: "/allergies", icon: UsersIcon, label: "More" },
+    { path: "/settings", icon: Settings, label: "More" },
   ];
 
   return (
@@ -17,11 +17,15 @@ export default function BottomNavigation() {
         {navItems.map(({ path, icon: Icon, label }) => {
           const isActive = location === path;
           return (
-            <Link key={path} href={path} className={`flex flex-col items-center p-3 transition-colors ${
-              isActive 
-                ? "text-primary" 
-                : "text-neutral-500 hover:text-primary"
-            }`}>
+            <Link
+              key={path}
+              href={path}
+              className={`flex flex-col items-center p-3 transition-colors ${
+                isActive
+                  ? "text-primary"
+                  : "text-neutral-500 hover:text-primary"
+              }`}
+            >
               <Icon className="h-5 w-5 mb-1" />
               <span className="text-xs font-medium">{label}</span>
             </Link>
