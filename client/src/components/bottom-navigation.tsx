@@ -1,14 +1,14 @@
 import { Link, useLocation } from "wouter";
-import { HomeIcon, ChartBarIcon, ShieldIcon, ReceiptIcon, UsersIcon } from "lucide-react";
+import { HomeIcon, ChartBarIcon, Wallet, ReceiptIcon, UsersIcon } from "lucide-react";
 
 export default function BottomNavigation() {
   const [location] = useLocation();
 
   const navItems = [
     { path: "/", icon: HomeIcon, label: "Home" },
-    { path: "/allergies", icon: ShieldIcon, label: "Allergies" },
+    { path: "/roommates", icon: Wallet, label: "Budgets" },
     { path: "/expenses", icon: ReceiptIcon, label: "Expenses" },
-    { path: "/roommates", icon: UsersIcon, label: "More" },
+    { path: "/allergies", icon: UsersIcon, label: "More" },
   ];
 
   return (

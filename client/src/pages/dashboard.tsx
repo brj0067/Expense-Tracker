@@ -106,7 +106,7 @@ export default function Dashboard() {
         <section className="p-4">
           <div className="mb-6">
             <h2 className="text-2xl font-medium text-neutral-900 mb-2">Dashboard</h2>
-            <p className="text-neutral-500 text-sm">Track your allergies and expenses</p>
+            <p className="text-neutral-500 text-sm">Track your budgets and spending</p>
           </div>
 
           {/* Balance Overview */}
@@ -181,12 +181,12 @@ export default function Dashboard() {
               <CardContent className="p-4">
                 <div className="flex items-center justify-between mb-2">
                   <TriangleAlert className="h-5 w-5 text-accent" />
-                  <span className="text-accent font-medium text-sm">ALLERGIES</span>
+                  <span className="text-accent font-medium text-sm">BUDGET ALERTS</span>
                 </div>
                 <div className="text-2xl font-bold text-neutral-900">
                   {dashboardData?.allergyCount || 0}
                 </div>
-                <div className="text-xs text-neutral-500">Active alerts</div>
+                <div className="text-xs text-neutral-500">Budgets exceeded</div>
               </CardContent>
             </Card>
 
@@ -268,11 +268,11 @@ export default function Dashboard() {
             <Card className="bg-gradient-to-r from-primary to-secondary text-white border-0">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-lg font-medium">Share Your Progress</h3>
+                  <h3 className="text-lg font-medium">Share Your Savings</h3>
                   <ShareIcon className="h-5 w-5" />
                 </div>
                 <p className="text-white/80 text-sm mb-4">
-                  You've successfully avoided {achievements.allergensAvoided} allergens this month!
+                  You've stayed within budget for {achievements.safePurchases} categories this month!
                 </p>
                 <div className="flex space-x-3">
                   <Button 

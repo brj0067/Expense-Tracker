@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import { SearchIcon, UserCircleIcon } from "lucide-react";
+=======
+import { Wallet, SearchIcon, UserCircleIcon } from "lucide-react";
+>>>>>>> 4b5898c (Update app title and navigation to Budgify and Budgets)
 import { Button } from "@/components/ui/button";
 
 export default function TopAppBar() {
@@ -6,8 +10,13 @@ export default function TopAppBar() {
     <header className="bg-primary text-white p-4 sticky top-0 z-50">
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
+<<<<<<< HEAD
           <img src="/logo-e-coin.svg" alt="E-Coin Logo" className="h-10 w-10" />
           <h1 className="text-xl font-medium">Expense Tracker</h1>
+=======
+          <Wallet className="h-6 w-6" />
+          <h1 className="text-xl font-medium">Budgify</h1>
+>>>>>>> 4b5898c (Update app title and navigation to Budgify and Budgets)
         </div>
         <div className="flex items-center space-x-4">
           <Button variant="ghost" size="icon" className="text-white hover:bg-primary-foreground/20">
